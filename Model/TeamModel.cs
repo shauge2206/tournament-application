@@ -1,11 +1,19 @@
-using TournamentApp.Model;
 
-namespace TournamentApp;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace TournamentApp.Model;
 
 public class TeamModel
 {
-    public required List<PlayerModel> players { get; init; }
-    public required string name { get; init; }
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public required Guid TeamId { get; init; }
+    
+    public required List<PlayerModel> Players { get; set; } = new();
+    
+    public required string Name { get; init; }
+    
     public required int MaxPlayers { get; init; }
     public required int MinPlayers { get; init; }
 }

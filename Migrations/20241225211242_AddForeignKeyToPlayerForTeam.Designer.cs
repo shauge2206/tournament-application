@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TournamentApp.Data;
 
@@ -10,9 +11,11 @@ using TournamentApp.Data;
 namespace TournamentApp.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20241225211242_AddForeignKeyToPlayerForTeam")]
+    partial class AddForeignKeyToPlayerForTeam
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
@@ -28,7 +31,7 @@ namespace TournamentApp.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("TeamId")
+                    b.Property<Guid?>("TeamModelTeamId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Telephone")
@@ -36,7 +39,7 @@ namespace TournamentApp.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TeamId");
+                    b.HasIndex("TeamModelTeamId");
 
                     b.ToTable("Players");
 
@@ -101,11 +104,9 @@ namespace TournamentApp.Migrations
 
             modelBuilder.Entity("TournamentApp.Model.PlayerModel", b =>
                 {
-                    b.HasOne("TournamentApp.Model.TeamModel", "Team")
+                    b.HasOne("TournamentApp.Model.TeamModel", null)
                         .WithMany("players")
-                        .HasForeignKey("TeamId");
-
-                    b.Navigation("Team");
+                        .HasForeignKey("TeamModelTeamId");
                 });
 
             modelBuilder.Entity("TournamentApp.Model.TeamModel", b =>

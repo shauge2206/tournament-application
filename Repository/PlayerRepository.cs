@@ -2,7 +2,6 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using TournamentApp.Data;
 using TournamentApp.Domain;
-using TournamentApp.DTO.Player;
 using TournamentApp.Interface.Player;
 using TournamentApp.Model;
 
@@ -22,43 +21,72 @@ public class PlayerRepository : IPlayerRepository
     
     public async Task<List<Player>> GetPlayers()
     {
-        List<PlayerModel> playersEntity = await _dataContext.Players.ToListAsync();
-        return _mapper.Map<List<Player>>(playersEntity);
+        List<PlayerModel> playerEntities = await _dataContext.Players.AsNoTracking()
+            .Include(p => p.Team)
+            .ToListAsync();
+        
+        return _mapper.Map<List<Player>>(playerEntities);
     }
 
-    public async Task<Player?> GetPlayer(Guid id)
+    public async Task<Player> GetPlayer(Guid id)
     {
-        PlayerModel? playerEntity = await _dataContext.Players.FindAsync(id);
-        return playerEntity != null ? _mapper.Map<Player>(playerEntity) : null;
+        PlayerModel playerEntity = await GetPlayerEntityByIdNoTracking(id);
+        
+        return _mapper.Map<Player>(playerEntity);
     }
 
     public async Task<Player> AddPlayer(Player newPlayer)
     {
         PlayerModel newPlayerEntity = _mapper.Map<PlayerModel>(newPlayer);
+        
         await _dataContext.Players.AddAsync(newPlayerEntity);
         await _dataContext.SaveChangesAsync();
-        return newPlayer;
+        
+        return _mapper.Map<Player>(newPlayerEntity);
     }
 
     public async Task<Player> UpdatePlayer(Player updatedPlayer)
     {
-        PlayerModel playerEntity = _mapper.Map<PlayerModel>(updatedPlayer);
-        _dataContext.Players.Update(playerEntity);
+        PlayerModel playerEntityToUpdate = await GetPlayerEntityById(updatedPlayer.Id);
+        
+        if (playerEntityToUpdate.NickName != updatedPlayer.NickName)
+            playerEntityToUpdate.NickName = updatedPlayer.NickName;
+        if (playerEntityToUpdate.Telephone != updatedPlayer.Telephone)
+            playerEntityToUpdate.Telephone = updatedPlayer.Telephone;
+        if (playerEntityToUpdate.TeamId != updatedPlayer.Team?.TeamId)
+            playerEntityToUpdate.TeamId = updatedPlayer.Team?.TeamId;
+        
         await _dataContext.SaveChangesAsync();
-
-        return _mapper.Map<Player>(updatedPlayer);
+        
+        //Detaching to avoid tracking conflicts when updating Team aswell
+        _dataContext.Entry(playerEntityToUpdate).State = EntityState.Detached;
+        
+        return _mapper.Map<Player>(playerEntityToUpdate);
     }
     
     public async Task<Player> DeletePlayer(Guid id)
     {
-        PlayerModel? playerEntityToDelete = await _dataContext.Players.FindAsync(id);
-        
-        if (playerEntityToDelete == null) 
-            throw new KeyNotFoundException($"Player with ID {id} was not found.");
+        PlayerModel playerEntityToDelete = await GetPlayerEntityById(id);
  
         _dataContext.Players.Remove(playerEntityToDelete);
         await _dataContext.SaveChangesAsync();
-        return _mapper.Map<Player>(playerEntityToDelete);  
-    }  
+        
+        return _mapper.Map<Player>(playerEntityToDelete);
+    }
+
+    private async Task<PlayerModel> GetPlayerEntityById(Guid id)
+    {
+        return await _dataContext.Players.FindAsync(id) 
+               ?? throw new KeyNotFoundException($"Player with ID {id} was not found.");
+    }
+    
+    private async Task<PlayerModel> GetPlayerEntityByIdNoTracking(Guid id)
+    {
+        return await _dataContext.Players
+                   .Include(p => p.Team)
+                   .AsNoTracking()
+                   .FirstOrDefaultAsync(p => p.Id == id)
+               ?? throw new KeyNotFoundException($"Player with ID {id} was not found.");
+    }
     
 }

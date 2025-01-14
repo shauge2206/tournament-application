@@ -23,22 +23,16 @@ public class PlayerService : IPlayerService
 
     public async Task<Player> GetPlayer(Guid id)
     {
-        var player = await _playerRepository.GetPlayer(id);
-        if (player == null)
-        {
-            throw new KeyNotFoundException($"Player with ID {id} was not found.");
-        }
-        
-        return player;
+        return await _playerRepository.GetPlayer(id);
     }
     
     public async Task<Player> CreatePlayer(AddPlayerDto addPlayerDto)
     {
-        Player createdPlayer = _mapper.Map<Player>(addPlayerDto);
-        return await _playerRepository.AddPlayer(createdPlayer);
+        Player newPlayer = _mapper.Map<Player>(addPlayerDto);
+        return await _playerRepository.AddPlayer(newPlayer);
     }
     
-    public async Task<Player> UpdatePlayer(Guid id, Player updatePlayerDto)
+    public async Task<Player> UpdatePlayer(Guid id, UpdatePlayerDto updatePlayerDto)
     {
         Player playerToUpdate = await GetPlayer(id);
         
@@ -51,8 +45,12 @@ public class PlayerService : IPlayerService
         return await _playerRepository.UpdatePlayer(playerToUpdate);
     }
 
-    public Task<Player> DeletePlayer(Guid id)
+    public async Task<Player> DeletePlayer(Guid id)
     {
-        return _playerRepository.DeletePlayer(id);
+        Player player = await GetPlayer(id);
+        if (player.Team != null)
+            throw new Exception($"Cannot delete Player '{player.NickName}' because player already belongs to team: {player.Team.Name}");
+        
+        return await _playerRepository.DeletePlayer(id);
     }
 }

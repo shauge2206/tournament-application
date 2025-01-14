@@ -22,28 +22,28 @@ public class PlayerController : ControllerBase
     }
     
     [HttpGet]
-    public async Task<ActionResult<List<Player>>> GetPlayers()
+    public async Task<ActionResult<List<PlayerResponseDto>>> GetPlayers()
     {
         var players =  await _playerService.GetAllPlayers();
         return Ok(_mapper.Map<List<PlayerResponseDto>>(players));
     }
     
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<PlayerModel?>> GetPlayerById(Guid id)
+    public async Task<ActionResult<PlayerResponseDto>> GetPlayerById(Guid id)
     {
          var player = await _playerService.GetPlayer(id);
          return Ok(_mapper.Map<PlayerResponseDto>(player));
     }
     
     [HttpPost]
-    public async Task<ActionResult<PlayerModel?>> CreatePlayer([FromBody] AddPlayerDto addPlayerDto)
+    public async Task<ActionResult<PlayerResponseDto>> CreatePlayer([FromBody] AddPlayerDto addPlayerDto)
     {
-        var createdPlayer = await _playerService.CreatePlayer(addPlayerDto);
-        return Ok(_mapper.Map<PlayerResponseDto>(createdPlayer));
+        var newPlayer = await _playerService.CreatePlayer(addPlayerDto);
+        return Ok(_mapper.Map<PlayerResponseDto>(newPlayer));
     }
     
     [HttpPatch("{id:guid}")]
-    public async Task<ActionResult<PlayerModel?>> UpdatePlayer(Guid id,
+    public async Task<ActionResult<PlayerResponseDto>> UpdatePlayer(Guid id,
         [FromBody] UpdatePlayerDto updatePlayerDto)
     {
         Player updatedPlayer = await _playerService.UpdatePlayer(id, updatePlayerDto);
@@ -51,7 +51,7 @@ public class PlayerController : ControllerBase
     }
     
     [HttpDelete("{id:guid}")]
-    public async Task<ActionResult<PlayerModel?>> DeletePlayer(Guid id)
+    public async Task<ActionResult<PlayerResponseDto>> DeletePlayer(Guid id)
     {
         var deletedPlayer = await _playerService.DeletePlayer(id);
         return Ok(_mapper.Map<PlayerResponseDto>(deletedPlayer));

@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using TournamentApp.Data;
+using TournamentApp.Interface;
 using TournamentApp.Interface.Player;
+using TournamentApp.Interface.Team;
 using TournamentApp.MapperProfile;
 using TournamentApp.Repository;
 using TournamentApp.Service;
@@ -16,7 +18,12 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();
 builder.Services.AddScoped<IPlayerService, PlayerService>();
+
+builder.Services.AddScoped<ITeamRepository, TeamRepository>();
+builder.Services.AddScoped<ITeamService, TeamService>();
+
 builder.Services.AddAutoMapper(typeof(PlayerProfile));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 //Add DataContext class to be handled by the DI container
 builder.Services.AddDbContext<DataContext>(options =>

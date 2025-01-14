@@ -1,3 +1,5 @@
+using TournamentApp.Model;
+
 namespace TournamentApp;
 
 public class TournamentModel
